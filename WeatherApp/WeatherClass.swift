@@ -12,17 +12,22 @@ import SystemConfiguration
 
 class Weather {
 
-    func displayURL(nCity: String) -> [String] {
+    var nameCityOut = String()
+    var tempOut = String()
+    var windOut = String()
+    var humOut = String()
+    var iconWeatherOut = String()
+    
+    func displayURL(nCity: String) {
         
-        var nameCityOut = "n/a"
-        var tempOut = "n/a"
-        var windOut = "n/a"
-        var humOut = "n/a"
-        var iconWeatherOut = "n/a"
+        nameCityOut = "n/a"
+        tempOut = "n/a"
+        windOut = "n/a"
+        humOut = "n/a"
+        iconWeatherOut = "n/a"
         
-        var param: [String] = [nameCityOut, tempOut, humOut, windOut, iconWeatherOut]
-        let myURLAdress = "http://api.openweathermap.org/data/2.5/weather?q=\(nCity.stringByReplacingOccurrencesOfString(" ", withString: ""))&appid=e06513ffb372a74433c5e0971f587432"
-        let myURL = NSURL(string: myURLAdress)
+        let myURLAdress = "http://api.openweathermap.org/data/2.5/weather?q=\(nCity)&appid=e06513ffb372a74433c5e0971f587432"
+        let myURL = NSURL(string: myURLAdress.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!)
         
         var isTaskRun = true
         
@@ -49,19 +54,18 @@ class Weather {
                 wind = round(wind!)
                 
                 if temp > 0 {
-                    tempOut = "+\(Int(temp!)) ºC"
+                    self.tempOut = "+\(Int(temp!)) ºC"
                 }else if temp < 0 {
-                    tempOut = "\(Int(temp!)) ºC"
+                    self.tempOut = "\(Int(temp!)) ºC"
                 }else{
-                    tempOut = "0 ºC"
+                    self.tempOut = "0 ºC"
                 }
                 
-                windOut = "wind: \(Int(wind!)) m/s"
-                humOut = "humidity: \(hum) %"
-                nameCityOut = "\(nameCity)"
-                iconWeatherOut = "\(iconWeather)"
-
-                param = [nameCityOut, tempOut, humOut, windOut, iconWeatherOut]
+                self.windOut = "wind: \(Int(wind!)) m/s"
+                self.humOut = "humidity: \(hum) %"
+                self.nameCityOut = "\(nameCity)"
+                self.iconWeatherOut = "\(iconWeather)"
+                
                 isTaskRun = false
                 
             }else{
@@ -74,7 +78,6 @@ class Weather {
         while isTaskRun {
                 // waiting 
         }
-        return param
        
     }
     

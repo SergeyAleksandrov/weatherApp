@@ -14,13 +14,9 @@ class ViewController: UIViewController, DestinationViewDelegate {
 
    
     @IBOutlet weak var cityLabel: UILabel!
-  
     @IBOutlet weak var tempLabel: UILabel!
-    
     @IBOutlet weak var humLabel: UILabel!
-    
     @IBOutlet weak var windLabel: UILabel!
-    
     @IBOutlet weak var weatherImageViewer: UIImageView!
     
     var cityName = String()
@@ -51,7 +47,6 @@ class ViewController: UIViewController, DestinationViewDelegate {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
     
     func setDataLabeles() {
         
@@ -69,31 +64,29 @@ class ViewController: UIViewController, DestinationViewDelegate {
         }
         
         if Weather.isConnectedToNetwork() {
-            let tWeath: Weather = Weather()
-            paramWeather = tWeath.displayURL(cityLabel.text!)
             
-            if paramWeather.count > 3 {
-                if paramWeather[0] != "n/a" {
-                    self.cityLabel.text = paramWeather[0]
-                    self.tempLabel.text = paramWeather[1]
-                    self.humLabel.text = paramWeather[2]
-                    self.windLabel.text = paramWeather[3]
-                    
-                    if paramWeather[4] == "n/a" {
-                        self.weatherImageViewer.image = UIImage(named: "na")
-                    } else {
-                        let imgURL: NSURL = NSURL(string: "http://openweathermap.org/img/w/\(paramWeather[4]).png")!
-                        let imgData: NSData = NSData(contentsOfURL: imgURL)!
-                        self.weatherImageViewer.image = UIImage(data: imgData)
-                    }
-                    
-                    saveCity(paramWeather)
-                    
+            let tWeath: Weather = Weather()
+            
+            tWeath.displayURL(cityLabel.text!)
+            
+            if tWeath.nameCityOut != "n/a" {
+                self.cityLabel.text = tWeath.nameCityOut
+                self.tempLabel.text = tWeath.tempOut
+                self.humLabel.text = tWeath.humOut
+                self.windLabel.text = tWeath.windOut
+                
+                if tWeath.iconWeatherOut == "n/a" {
+                    self.weatherImageViewer.image = UIImage(named: "na")
                 } else {
-                    cityLabel.text = prevCityName
-                    alertMessage("Alert", msgMs: "Error getting city")
+                    let imgURL: NSURL = NSURL(string: "http://openweathermap.org/img/w/\(tWeath.iconWeatherOut).png")!
+                    let imgData: NSData = NSData(contentsOfURL: imgURL)!
+                    self.weatherImageViewer.image = UIImage(data: imgData)
                 }
+                
+                saveCity(tWeath)
+                
             } else {
+                cityLabel.text = prevCityName
                 alertMessage("Alert", msgMs: "Error getting city")
             }
             
@@ -166,7 +159,7 @@ class ViewController: UIViewController, DestinationViewDelegate {
     }
     
     
-    func saveCity(paramToSave: [String])
+    func saveCity(ctWeather: Weather)
     {
         let weatherFetch = NSFetchRequest(entityName: "CityWeather")
         
@@ -180,11 +173,11 @@ class ViewController: UIViewController, DestinationViewDelegate {
                 entity = (NSEntityDescription.insertNewObjectForEntityForName("CityWeather", inManagedObjectContext: moc) as! CityWeather)
             }
             
-            entity!.setValue(paramToSave[0], forKey: "name")
-            entity!.setValue(paramToSave[1], forKey: "temp")
-            entity!.setValue(paramToSave[2], forKey: "hum")
-            entity!.setValue(paramToSave[3], forKey: "wind")
-            entity!.setValue(paramToSave[4], forKey: "icon")
+            entity!.setValue(ctWeather.nameCityOut, forKey: "name")
+            entity!.setValue(ctWeather.tempOut, forKey: "temp")
+            entity!.setValue(ctWeather.humOut, forKey: "hum")
+            entity!.setValue(ctWeather.windOut, forKey: "wind")
+            entity!.setValue(ctWeather.iconWeatherOut, forKey: "icon")
             
             do {
                 try moc.save()
