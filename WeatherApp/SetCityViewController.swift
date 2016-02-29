@@ -18,19 +18,35 @@ class SetCityViewController: UIViewController{
     var preCityName: String! = nil
     var delegate: DestinationViewDelegate! = nil
     
+    @IBAction func cancelButton(sender: AnyObject) {
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     @IBOutlet weak var cityEditText: UITextField!
+    
     @IBAction func setCityButton(sender: AnyObject) {
         
-
-    delegate.setCtyName(cityEditText.text!)
-    self.dismissViewControllerAnimated(true, completion: nil)
-//    self.navigationController?.popToRootViewControllerAnimated(true)
-    
+        if  cityEditText.text == "" {
+            let alertController = UIAlertController(title: "Alert", message: "Please, enter city", preferredStyle: .Alert)
+            
+            let okButton = UIAlertAction(title: "OK", style: .Default) { (action) -> Void in}
+            
+            alertController.addAction(okButton)
+            
+            presentViewController(alertController, animated: true, completion: nil)
+        } else {
+            
+            if cityEditText.text != preCityName {
+                delegate.setCtyName(cityEditText.text!)
+            }
+            
+            self.dismissViewControllerAnimated(true, completion: nil)
+        }
     }
    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
     }
    
    

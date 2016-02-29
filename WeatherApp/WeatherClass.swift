@@ -7,20 +7,26 @@
 //
 
 import Foundation
+import SystemConfiguration
 
 
-class CityWeather {
+class Weather {
     
-    var nameCityOut: String = "n/a"
-    var tempOut: String = "n/a"
-    var windOut: String = "n/a"
-    var humOut: String = "n/a"
-    var iconWeatherOut: String = "n/a"
-   
+    var nameCityOut = String()
+    var tempOut = String()
+    var windOut = String()
+    var humOut = String()
+    var iconWeatherOut = String()
     
     func displayURL(nCity: String) -> [String] {
+
+        nameCityOut = "n/a"
+        tempOut = "n/a"
+        windOut = "n/a"
+        humOut = "n/a"
+        iconWeatherOut = "n/a"
         
-        var param: [String]=[]
+        var param: [String] = [self.nameCityOut, self.tempOut, self.humOut, self.windOut, self.iconWeatherOut]
         let myURLAdress = "http://api.openweathermap.org/data/2.5/weather?q=\(nCity)&appid=e06513ffb372a74433c5e0971f587432"
         let myURL = NSURL(string: myURLAdress)
         
@@ -67,7 +73,8 @@ class CityWeather {
                 
             }else{
                 isTaskRun = false
-                print("Error")
+                
+                //print("Error")
             }
             
         }
@@ -79,6 +86,25 @@ class CityWeather {
         return param
        
     }
+    
+    class func isConnectedToNetwork() -> Bool {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(sizeofValue(zeroAddress))
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        let defaultRouteReachability = withUnsafePointer(&zeroAddress) {
+            SCNetworkReachabilityCreateWithAddress(nil, UnsafePointer($0))
+        }
+        var flags = SCNetworkReachabilityFlags()
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability!, &flags) {
+            return false
+        }
+        let isReachable = (flags.rawValue & UInt32(kSCNetworkFlagsReachable)) != 0
+        let needsConnection = (flags.rawValue & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
+        return (isReachable && !needsConnection)
+    }
+    
+    
+    
     
 }
 
