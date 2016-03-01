@@ -8,7 +8,7 @@
 
 import Foundation
 import SystemConfiguration
-
+import SwiftyJSON
 
 class Weather {
 
@@ -71,9 +71,9 @@ class Weather {
             }else{
                 isTaskRun = false
             }
-            
+           
         }
-        
+
         URLTask.resume()
         while isTaskRun {
                 // waiting 
