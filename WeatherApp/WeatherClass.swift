@@ -18,7 +18,7 @@ class Weather {
     var humOut = String()
     var iconWeatherOut = String()
     
-    func displayURL(nCity: String) {
+    func displayURL(nCity: String, completionHandler: (NSError?) -> Void ) -> NSURLSessionTask {
         
         nameCityOut = "n/a"
         tempOut = "n/a"
@@ -28,20 +28,16 @@ class Weather {
         
         let myURLAdress = "http://api.openweathermap.org/data/2.5/weather?q=\(nCity)&appid=e06513ffb372a74433c5e0971f587432"
         let myURL = NSURL(string: myURLAdress.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!)
-        
-        var isTaskRun = true
-        
-        let URLTask = NSURLSession.sharedSession().dataTaskWithURL(myURL!){
-            myData, response, error in
+        let URLTask = NSURLSession.sharedSession().dataTaskWithURL(myURL!){ myData, response, error -> Void in
             
-            guard error == nil else {
-                isTaskRun = false
+            if error != nil {
+                completionHandler(error)
                 return
             }
-  
-            let json = JSON(data: myData!)
-            let cod = json["cod"].int
             
+            let json = JSON(data: myData!)
+            
+            let cod = json["cod"].int
             if cod == 200 {
                 
                 let iconWeather = json["weather"][0]["icon"]
@@ -49,7 +45,7 @@ class Weather {
                 var temp = json["main"]["temp"].double
                 var wind = json["wind"]["speed"].double
                 let hum = json["main"]["humidity"]
-               
+                
                 temp = round(temp! - 273)
                 wind = round(wind!)
                 
@@ -60,26 +56,25 @@ class Weather {
                 }else{
                     self.tempOut = "0 ºC"
                 }
-                
+               
                 self.windOut = "wind: \(Int(wind!)) m/s"
                 self.humOut = "humidity: \(hum) %"
                 self.nameCityOut = "\(nameCity)"
                 self.iconWeatherOut = "\(iconWeather)"
+                //print(self.windOut+self.humOut+self.nameCityOut+self.iconWeatherOut+self.tempOut)
                 
-                isTaskRun = false
-                
-            }else{
-                isTaskRun = false
+                completionHandler(nil)
+                return
+               
             }
-           
+            completionHandler(nil)
+            return
         }
-
+        
         URLTask.resume()
-        while isTaskRun {
-                // waiting 
-        }
-       
+        return URLTask
     }
+    
     
     class func isConnectedToNetwork() -> Bool {
         var zeroAddress = sockaddr_in()
@@ -96,8 +91,7 @@ class Weather {
         let needsConnection = (flags.rawValue & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
         return (isReachable && !needsConnection)
     }
-    
-    
+
     
     
 }

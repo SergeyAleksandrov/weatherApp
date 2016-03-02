@@ -67,27 +67,35 @@ class ViewController: UIViewController, DestinationViewDelegate {
             
             let tWeath: Weather = Weather()
             
-            tWeath.displayURL(cityLabel.text!)
-            
-            if tWeath.nameCityOut != "n/a" {
-                self.cityLabel.text = tWeath.nameCityOut
-                self.tempLabel.text = tWeath.tempOut
-                self.humLabel.text = tWeath.humOut
-                self.windLabel.text = tWeath.windOut
+            tWeath.displayURL(cityLabel.text!) { error in
                 
-                if tWeath.iconWeatherOut == "n/a" {
-                    self.weatherImageViewer.image = UIImage(named: "na")
+                if error != nil {
+                    self.cityLabel.text = self.prevCityName
+                    self.alertMessage("Alert", msgMs: "Error getting city")
                 } else {
-                    let imgURL: NSURL = NSURL(string: "http://openweathermap.org/img/w/\(tWeath.iconWeatherOut).png")!
-                    let imgData: NSData = NSData(contentsOfURL: imgURL)!
-                    self.weatherImageViewer.image = UIImage(data: imgData)
+                    if tWeath.nameCityOut != "n/a" {
+                        self.cityLabel.text = tWeath.nameCityOut
+                        self.tempLabel.text = tWeath.tempOut
+                        self.humLabel.text = tWeath.humOut
+                        self.windLabel.text = tWeath.windOut
+                        
+                        if tWeath.iconWeatherOut == "n/a" {
+                            self.weatherImageViewer.image = UIImage(named: "na")
+                        } else {
+                            let imgURL: NSURL = NSURL(string: "http://openweathermap.org/img/w/\(tWeath.iconWeatherOut).png")!
+                            let imgData: NSData = NSData(contentsOfURL: imgURL)!
+                            self.weatherImageViewer.image = UIImage(data: imgData)
+                        }
+                        
+                        self.saveCity(tWeath)
+                        print(tWeath.windOut+tWeath.humOut+tWeath.nameCityOut+tWeath.iconWeatherOut+tWeath.tempOut)
+                    } else {
+                        self.cityLabel.text = self.prevCityName
+                        self.alertMessage("Alert", msgMs: "Error getting city")
+                    }
                 }
                 
-                saveCity(tWeath)
                 
-            } else {
-                cityLabel.text = prevCityName
-                alertMessage("Alert", msgMs: "Error getting city")
             }
             
         } else {
