@@ -12,19 +12,19 @@ import SwiftyJSON
 
 class Weather {
 
-    var nameCityOut = String()
+    var nameOut = String()
     var tempOut = String()
     var windOut = String()
     var humOut = String()
-    var iconWeatherOut = String()
+    var iconOut = String()
     
-    func displayURL(nCity: String, completionHandler: (NSError?) -> Void ) -> NSURLSessionTask {
+    func parsingCityJSON(nCity: String, completionHandler: (NSError?) -> Void ) -> NSURLSessionTask {
         
-        nameCityOut = "n/a"
+        nameOut = "n/a"
         tempOut = "n/a"
         windOut = "n/a"
         humOut = "n/a"
-        iconWeatherOut = "n/a"
+        iconOut = "n/a"
         
         let myURLAdress = "http://api.openweathermap.org/data/2.5/weather?q=\(nCity)&appid=e06513ffb372a74433c5e0971f587432"
         let myURL = NSURL(string: myURLAdress.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!)
@@ -59,8 +59,8 @@ class Weather {
                
                 self.windOut = "wind: \(Int(wind!)) m/s"
                 self.humOut = "humidity: \(hum) %"
-                self.nameCityOut = "\(nameCity)"
-                self.iconWeatherOut = "\(iconWeather)"
+                self.nameOut = "\(nameCity)"
+                self.iconOut = "\(iconWeather)"
                 //print(self.windOut+self.humOut+self.nameCityOut+self.iconWeatherOut+self.tempOut)
                 
                 completionHandler(nil)

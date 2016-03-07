@@ -37,7 +37,9 @@ class ViewController: UIViewController, DestinationViewDelegate {
         super.viewDidLoad()
         
         cityLabel.text = cityName
-        setDataLabeles()
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,0)){
+            self.setDataLabeles()
+        }
         citiesInitialization()
         
     }
@@ -67,28 +69,28 @@ class ViewController: UIViewController, DestinationViewDelegate {
             
             let tWeath: Weather = Weather()
             
-            tWeath.displayURL(cityLabel.text!) { error in
+            tWeath.parsingCityJSON(cityLabel.text!) { error in
                 
                 if error != nil {
                     self.cityLabel.text = self.prevCityName
                     self.alertMessage("Alert", msgMs: "Error getting city")
                 } else {
-                    if tWeath.nameCityOut != "n/a" {
-                        self.cityLabel.text = tWeath.nameCityOut
+                    if tWeath.nameOut != "n/a" {
+                        self.cityLabel.text = tWeath.nameOut
                         self.tempLabel.text = tWeath.tempOut
                         self.humLabel.text = tWeath.humOut
                         self.windLabel.text = tWeath.windOut
                         
-                        if tWeath.iconWeatherOut == "n/a" {
+                        if tWeath.iconOut == "n/a" {
                             self.weatherImageViewer.image = UIImage(named: "na")
                         } else {
-                            let imgURL: NSURL = NSURL(string: "http://openweathermap.org/img/w/\(tWeath.iconWeatherOut).png")!
+                            let imgURL: NSURL = NSURL(string: "http://openweathermap.org/img/w/\(tWeath.iconOut).png")!
                             let imgData: NSData = NSData(contentsOfURL: imgURL)!
                             self.weatherImageViewer.image = UIImage(data: imgData)
                         }
                         
                         self.saveCity(tWeath)
-                        print(tWeath.windOut+tWeath.humOut+tWeath.nameCityOut+tWeath.iconWeatherOut+tWeath.tempOut)
+                        print(tWeath.windOut+tWeath.humOut+tWeath.nameOut+tWeath.iconOut+tWeath.tempOut)
                     } else {
                         self.cityLabel.text = self.prevCityName
                         self.alertMessage("Alert", msgMs: "Error getting city")
@@ -124,14 +126,14 @@ class ViewController: UIViewController, DestinationViewDelegate {
 
     
     func setCtyName(nameCity: String){
-        
-        if Weather.isConnectedToNetwork() {
-            cityLabel.text = nameCity
-            setDataLabeles()
-        } else {
-            alertMessage("Alert", msgMs: "No internet connection")
+        if nameCity != "c_n_c_l" {
+            if Weather.isConnectedToNetwork() {
+                cityLabel.text = nameCity
+                setDataLabeles()
+            } else {
+                alertMessage("Alert", msgMs: "No internet connection")
+            }
         }
-        
     }
     
     
@@ -145,8 +147,7 @@ class ViewController: UIViewController, DestinationViewDelegate {
         alertController.addAction(okButton)
         
         presentViewController(alertController, animated: true, completion: nil)
-       
-    
+        
     }
     
     
@@ -157,8 +158,6 @@ class ViewController: UIViewController, DestinationViewDelegate {
         do {
             let fetchweather = try moc.executeFetchRequest(weatherFetch) as! [CityWeather]
             return [fetchweather[0].name!,fetchweather[0].temp!,fetchweather[0].hum!,fetchweather[0].wind!,fetchweather[0].icon!]
-            //print(fetchweather.first!.name!)
-            
         } catch {
             fatalError("bad things happened \(error)")
         }
@@ -169,69 +168,77 @@ class ViewController: UIViewController, DestinationViewDelegate {
     
     func saveCity(ctWeather: Weather)
     {
-        let weatherFetch = NSFetchRequest(entityName: "CityWeather")
         
-        do {
-            let fetchWeather = try moc.executeFetchRequest(weatherFetch) as! [CityWeather]
-            var entity: CityWeather? = nil
-            
-            if !fetchWeather.isEmpty {
-                entity = fetchWeather[0]
-            } else {
-                entity = (NSEntityDescription.insertNewObjectForEntityForName("CityWeather", inManagedObjectContext: moc) as! CityWeather)
-            }
-            
-            entity!.setValue(ctWeather.nameCityOut, forKey: "name")
-            entity!.setValue(ctWeather.tempOut, forKey: "temp")
-            entity!.setValue(ctWeather.humOut, forKey: "hum")
-            entity!.setValue(ctWeather.windOut, forKey: "wind")
-            entity!.setValue(ctWeather.iconWeatherOut, forKey: "icon")
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,0)){
+            let weatherFetch = NSFetchRequest(entityName: "CityWeather")
             
             do {
-                try moc.save()
+                let fetchWeather = try self.moc.executeFetchRequest(weatherFetch) as! [CityWeather]
+                var entity: CityWeather? = nil
+                
+                if !fetchWeather.isEmpty {
+                    entity = fetchWeather[0]
+                } else {
+                    entity = (NSEntityDescription.insertNewObjectForEntityForName("CityWeather", inManagedObjectContext: self.moc) as! CityWeather)
+                }
+                
+                entity!.setValue(ctWeather.nameOut, forKey: "name")
+                entity!.setValue(ctWeather.tempOut, forKey: "temp")
+                entity!.setValue(ctWeather.humOut, forKey: "hum")
+                entity!.setValue(ctWeather.windOut, forKey: "wind")
+                entity!.setValue(ctWeather.iconOut, forKey: "icon")
+                
+                do {
+                    try self.moc.save()
+                } catch {
+                    fatalError( "Fail to save data: \(error)")
+                }
+                
+                //print(fetchweather.first!.name!)
+                
             } catch {
-                fatalError( "Fail to save data: \(error)")
+                fatalError("Error: \(error)")
             }
-
-            //print(fetchweather.first!.name!)
-            
-        } catch {
-            fatalError("Error: \(error)")
         }
+        
+        
     
     }
     
     
     func citiesInitialization()
     {
-        let cities: [String] = ["703448", "4905599", "2950159", "6094817", "5128581", "625144", "7536080", "593116", "1273294", "756135", "323786", "456172", "2988507", "2759794", "2761367", "2643743", "3117735", "658225", "5344157", "1267182"]
-        
-        let weatherFetch = NSFetchRequest(entityName: "CitiesWeather")
-        
-        do {
-          
-            let fetchWeather = try moc.executeFetchRequest(weatherFetch) as! [CitiesWeather]
-         
-            if fetchWeather.count == 0 {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,0)){
+            let cities: [String] = ["703448", "4905599", "2950159", "6094817", "5128581", "625144", "7536080", "593116", "1273294", "756135", "323786", "456172", "2988507", "2759794", "2761367", "2643743", "3117735", "658225", "5344157", "1267182"]
+            
+            let weatherFetch = NSFetchRequest(entityName: "CitiesWeather")
+            
+            do {
                 
-                for var i=0; i < cities.count; i++ {
+                let fetchWeather = try self.moc.executeFetchRequest(weatherFetch) as! [CitiesWeather]
+                
+                if fetchWeather.count == 0 {
                     
-                  let  entity = NSEntityDescription.insertNewObjectForEntityForName("CitiesWeather", inManagedObjectContext: moc) as! CitiesWeather
+                    for var i=0; i < cities.count; i++ {
+                        
+                        let  entity = NSEntityDescription.insertNewObjectForEntityForName("CitiesWeather", inManagedObjectContext: self.moc) as! CitiesWeather
+                        
+                        entity.setValue(cities[i], forKey: "idCity")
+                    }
                     
-                    entity.setValue(cities[i], forKey: "idCity")
-                }
+                    do {
+                        try self.moc.save()
+                    } catch {
+                        fatalError( "Fail to save data: \(error)")
+                    }
                     
-                do {
-                    try moc.save()
-                } catch {
-                    fatalError( "Fail to save data: \(error)")
                 }
                 
+            } catch {
+                fatalError("Error: \(error)")
             }
-
-        } catch {
-            fatalError("Error: \(error)")
         }
+        
         
     }
     

@@ -19,6 +19,7 @@ class SetCityViewController: UIViewController{
     var delegate: DestinationViewDelegate! = nil
     
     @IBAction func cancelButton(sender: AnyObject) {
+        delegate.setCtyName("c_n_c_l")
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     

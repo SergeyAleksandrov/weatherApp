@@ -1479,7 +1479,6 @@
                                 </variation>
                                 <connections>
                                     <action selector="cancelButton:" destination="1Fh-Io-6GZ" eventType="touchUpInside" id="rgs-HQ-8zv"/>
-                                    <action selector="setCityButton:" destination="1Fh-Io-6GZ" eventType="touchUpInside" id="5S0-Gg-uYM"/>
                                 </connections>
                             </button>
                         </subviews>
